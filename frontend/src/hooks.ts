@@ -19,7 +19,6 @@ export function useAsync<T>(load: (signal: AbortSignal) => Promise<T>, deps: Dep
         if (!ctrl.signal.aborted) setState({ loading: false, error: err instanceof Error ? err.message : String(err) });
       });
     return () => ctrl.abort();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
   return state;
 }

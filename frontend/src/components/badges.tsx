@@ -9,11 +9,11 @@ export function TaskTypeBadge({ type }: { type: string }) {
   return <span className={`badge badge-${type}`}>{type}</span>;
 }
 
-export function TierBadge({ e }: { e: Pick<Enrollment, "program_name" | "tier" | "tier_reason"> }) {
+export function TierLine({ e }: { e: Pick<Enrollment, "program_name" | "tier" | "tier_reason"> }) {
   return (
-    <span className="badge badge-tier" title={e.tier_reason}>
+    <div className="small tier-line" title={e.tier_reason}>
       {e.program_name}: <strong>{e.tier ?? "No tier"}</strong>
-    </span>
+    </div>
   );
 }
 
@@ -26,7 +26,7 @@ const NEED_LABEL: Record<string, string> = {
 
 export function NeedChip({ need }: { need: Need }) {
   const noPcp = need.target === "PCP" && need.status === "never_seen";
-  const label = noPcp ? "no PCP on record" : NEED_LABEL[need.status] ?? need.status;
+  const label = noPcp ? "no visit on record" : (NEED_LABEL[need.status] ?? need.status);
   const title = [
     `Every ${need.cadence_days} days`,
     need.last_date && `last ${need.last_date}`,
@@ -55,7 +55,8 @@ export function DueCell({ task }: { task: Task }) {
   if (task.task_type === "referral") return <span className="muted">first visit</span>;
   return (
     <span>
-      <strong>{task.days_overdue} d</strong> <span className="muted">since {task.due_date}</span>
+      <strong>{task.days_overdue} days</strong>
+      <div className="muted small">due {task.due_date}</div>
     </span>
   );
 }

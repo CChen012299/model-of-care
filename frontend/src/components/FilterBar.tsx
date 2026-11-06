@@ -1,4 +1,4 @@
-import type { Filters, Meta, Role, View } from "../api/types";
+import { EMPTY_FILTERS, type Filters, type Meta, type Role, type View } from "../api/types";
 
 interface Props {
   meta: Meta;
@@ -75,7 +75,7 @@ export function FilterBar({ meta, role, view, filters, hasTasks, onFilters, onHa
         </label>
       )}
       {active && (
-        <button className="link" onClick={() => onFilters({ specialty: "", task_type: "", program: "", tier: "", search: "" })}>
+        <button className="link" onClick={() => onFilters(EMPTY_FILTERS)}>
           Clear filters
         </button>
       )}

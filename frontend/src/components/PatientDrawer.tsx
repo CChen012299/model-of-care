@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { api } from "../api/client";
 import type { Role } from "../api/types";
 import { useAsync } from "../hooks";
@@ -6,11 +7,18 @@ import { DueCell, NeedChip, PriorityBadge, TaskTypeBadge } from "./badges";
 interface Props {
   id: string;
   role: Role;
+  programNames: Record<string, string>;
   onClose: () => void;
 }
 
-export function PatientDrawer({ id, role, onClose }: Props) {
+export function PatientDrawer({ id, role, programNames, onClose }: Props) {
   const { data: p, error, loading } = useAsync((signal) => api.patient(role, id, signal), [id, role]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
 
   return (
     <div className="drawer-backdrop" onClick={onClose}>
@@ -43,8 +51,12 @@ export function PatientDrawer({ id, role, onClose }: Props) {
             {p.tasks.length === 0 && <p className="muted">None.</p>}
             {p.tasks.map((t) => (
               <div key={t.id} className="card">
-                <TaskTypeBadge type={t.task_type} /> <strong>{t.target}</strong> <PriorityBadge priority={t.priority} />{" "}
-                <DueCell task={t} />
+                <div className="task-head">
+                  <TaskTypeBadge type={t.task_type} /> <strong>{t.target}</strong>
+                  {t.priority !== "routine" && <PriorityBadge priority={t.priority} />}
+                  <span className="grow" />
+                  <DueCell task={t} />
+                </div>
                 <div className="small">{t.reason}</div>
               </div>
             ))}
@@ -70,7 +82,7 @@ export function PatientDrawer({ id, role, onClose }: Props) {
                     <td className="nowrap">{n.last_date ?? "never"}</td>
                     <td className="nowrap">{n.next_scheduled_date ?? "none"}</td>
                     <td className="small">
-                      {n.sources.map((s) => `${s.program_id} (${s.tier})`).join(", ")}
+                      {n.sources.map((s) => `${programNames[s.program_id] ?? s.program_id} (${s.tier})`).join(", ")}
                     </td>
                   </tr>
                 ))}

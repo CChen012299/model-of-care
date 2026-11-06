@@ -31,7 +31,7 @@ export function WorklistTable({ items, onOpenPatient }: Props) {
               <PriorityBadge priority={task.priority} />
             </td>
             <td>
-              <button className="link" onClick={() => onOpenPatient(patient.patient_id)}>
+              <button className="link nowrap" onClick={() => onOpenPatient(patient.patient_id)}>
                 {patient.last_name}, {patient.first_name}
               </button>
               <div className="muted small">{patient.patient_id}</div>

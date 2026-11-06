@@ -62,10 +62,8 @@ table.compact th, table.compact td { padding: 5px 8px; }
 .badge-scheduling { background: #e6f4ea; color: #1e6b34; }
 .badge-referral { background: #fff1e0; color: #9a4a00; }
 .badge-priority-high, .badge-priority-urgent { background: #fde8e8; color: #b42318; }
-.badge-tier { background: #f0f2f5; color: #333; font-weight: 400; }
 .badge-scheduled { background: #e8f0ff; color: #2456c8; }
 
-.stack { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
 .wrap { display: flex; flex-wrap: wrap; gap: 4px; }
 .chip { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 12px; border: 1px solid transparent; white-space: nowrap; }
 .chip em { font-style: normal; opacity: 0.75; margin-left: 2px; }
@@ -87,3 +85,8 @@ table.compact th, table.compact td { padding: 5px 8px; }
 .drawer li { margin-bottom: 3px; }
 .card { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; }
 .card .small { margin-top: 3px; color: #3b4452; }
+.task-head { display: flex; align-items: baseline; gap: 6px; }
+.task-head .grow { flex: 1; }
+.task-head .small { display: inline; margin-left: 6px; }
+.tier-line { white-space: nowrap; }
+.tier-line + .tier-line { margin-top: 4px; }

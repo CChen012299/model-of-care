@@ -1,5 +1,5 @@
 import type { Patient } from "../api/types";
-import { NeedChip, TaskChip, TierBadge } from "./badges";
+import { NeedChip, TaskChip, TierLine } from "./badges";
 
 interface Props {
   items: Patient[];
@@ -24,7 +24,7 @@ export function PatientsTable({ items, onOpenPatient }: Props) {
         {items.map((p) => (
           <tr key={p.patient_id}>
             <td>
-              <button className="link" onClick={() => onOpenPatient(p.patient_id)}>
+              <button className="link nowrap" onClick={() => onOpenPatient(p.patient_id)}>
                 {p.last_name}, {p.first_name}
               </button>
               <div className="muted small">{p.patient_id}</div>
@@ -32,13 +32,11 @@ export function PatientsTable({ items, onOpenPatient }: Props) {
             <td>{p.age}</td>
             <td className="small">{p.pcp_provider_name ?? <span className="muted">none assigned</span>}</td>
             <td>
-              <div className="stack">
-                {p.enrollments.length ? (
-                  p.enrollments.map((e) => <TierBadge key={e.program_id} e={e} />)
-                ) : (
-                  <span className="muted small">Not eligible for any program</span>
-                )}
-              </div>
+              {p.enrollments.length ? (
+                p.enrollments.map((e) => <TierLine key={e.program_id} e={e} />)
+              ) : (
+                <span className="muted small">Not eligible for any program</span>
+              )}
             </td>
             <td>
               <div className="wrap">
