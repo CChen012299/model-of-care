@@ -55,10 +55,10 @@ cd backend
 pytest
 ```
 
-64 tests: rule boundaries (age 18/65, A1C 7.0/9.0, the 6-month window, cadence
+65 tests: rule boundaries (age 18/65, A1C 7.0/9.0, the 6-month window, cadence
 edges), every chronic ICD family, upcoming visits, never-seen PCP vs specialist,
-cross-program need merging, rules config validation, idempotent re-runs, and API
-role scoping on the provided data.
+cross-program need merging, rules config validation, idempotent re-runs and
+re-seeding, and API role scoping on the provided data.
 
 ---
 
@@ -199,7 +199,7 @@ The spec says to make reasonable assumptions and document them. These are mine.
 7. **ICD families** match by prefix ignoring the dot: `E11` matches `E11.65`,
    `G47.3` matches `G47.33` but not `G47.0`.
 8. **Never seen a PCP:** no task, per the spec. These patients (72 adults at the
-   default date) still show a "no PCP on record" need in the UI so they do not
+   default date) still show a "no visit on record" PCP need in the UI so they do not
    disappear.
 9. **`pcp_provider_name`** is informational. PCP history comes from encounters. 24
    patients have no assigned PCP, and 18 of those have PCP visits anyway.
