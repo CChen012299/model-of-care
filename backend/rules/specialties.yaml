@@ -1,0 +1,27 @@
+# Specialties a visit need can target. referral_required controls what happens
+# when a patient has never seen the specialty: specialists need clinical review
+# (referral task); primary care does not get a task at all.
+
+PCP:
+  category: primary_care
+  referral_required: false
+
+Endocrinology:
+  category: specialist
+  referral_required: true
+
+Cardiology:
+  category: specialist
+  referral_required: true
+
+Podiatry:
+  category: specialist
+  referral_required: true
+
+Ophthalmology:
+  category: specialist
+  referral_required: true
+
+Nephrology:
+  category: specialist
+  referral_required: true

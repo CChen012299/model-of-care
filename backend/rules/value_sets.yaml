@@ -1,0 +1,10 @@
+# Named groups of ICD-10 code families. A prefix matches the whole family:
+# "E11" matches E11.65, "G47.3" matches G47.33.
+
+chronic_conditions:
+  description: Chronic diagnoses that make a patient High Priority for primary care
+  icd10_prefixes: [E10, E11, I10, E78, J45, N18, I25, E03, G47.3, M81]
+
+diabetes:
+  description: Type 1 (E10) or Type 2 (E11) diabetes mellitus
+  icd10_prefixes: [E10, E11]

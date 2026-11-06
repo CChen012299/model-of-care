@@ -1,0 +1,39 @@
+id: diabetes_management
+name: Diabetes Management
+description: Ensure diabetic patients receive specialist care matched to their risk level.
+
+eligibility:
+  has_diagnosis: { value_set: diabetes }
+
+# Risk is based on the most recent HbA1c within the last 6 months.
+tiers:
+  - name: High Risk
+    when:
+      latest_lab: { test: HbA1c, within_months: 6, gte: 9.0 }
+    needs:
+      - { type: visit, specialty: Endocrinology, every_days: 90 }
+      - { type: visit, specialty: Cardiology, every_days: 90 }
+      - { type: visit, specialty: Podiatry, every_days: 180 }
+      - { type: visit, specialty: Ophthalmology, every_days: 365 }
+      - { type: visit, specialty: Nephrology, every_days: 180 }
+
+  - name: Moderate Risk
+    when:
+      latest_lab: { test: HbA1c, within_months: 6, gte: 7.0, lt: 9.0 }
+    needs:
+      - { type: visit, specialty: Endocrinology, every_days: 180 }
+      - { type: visit, specialty: Ophthalmology, every_days: 365 }
+      - { type: visit, specialty: Podiatry, every_days: 365 }
+
+  - name: Low Risk
+    when:
+      latest_lab: { test: HbA1c, within_months: 6, lt: 7.0 }
+    needs:
+      - { type: visit, specialty: Endocrinology, every_days: 365 }
+      - { type: visit, specialty: Ophthalmology, every_days: 365 }
+
+  - name: Unmonitored
+    when:
+      no_recent_lab: { test: HbA1c, within_months: 6 }
+    needs:
+      - { type: visit, specialty: Endocrinology, every_days: 90, priority: high, note: "Priority: get labs done" }

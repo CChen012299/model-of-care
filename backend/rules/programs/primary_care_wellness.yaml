@@ -1,0 +1,21 @@
+id: primary_care_wellness
+name: Primary Care Wellness
+description: Ensure all adult patients see their PCP at least once a year.
+
+eligibility:
+  age_gte: 18
+
+# Tiers are checked in order; the first match wins. A tier without `when`
+# is the default and must be last.
+tiers:
+  - name: High Priority
+    when:
+      any:
+        - age_gte: 65
+        - has_diagnosis: { value_set: chronic_conditions }
+    needs:
+      - { type: visit, specialty: PCP, every_days: 180 }
+
+  - name: Standard
+    needs:
+      - { type: visit, specialty: PCP, every_days: 365 }
