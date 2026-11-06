@@ -72,7 +72,7 @@ def _int(value: Any, path: str) -> int:
     return value
 
 
-def _mapping(value: Any, path: str, required: set[str], optional: set[str] = frozenset()) -> dict:
+def _mapping(value: Any, path: str, required: set[str], optional: set[str] | frozenset[str] = frozenset()) -> dict:
     if not isinstance(value, dict):
         raise RulesConfigError(f"{path}: expected a mapping, got {value!r}")
     missing = required - value.keys()
@@ -224,7 +224,7 @@ def _latest_lab(params: Any, _vs: Mapping[str, ValueSet], path: str) -> Conditio
             return Match(False)
         latest = recent[-1]
         ok = all(_BOUNDS[k][1](latest.value, b) for k, b in bounds)
-        desc = " and ".join(f"{_BOUNDS[k][0]} {b:g}" for k, b in bounds)
+        desc = " and ".join(f"{_BOUNDS[k][0]} {b}" for k, b in bounds)
         return Match(ok, [f"{latest.test_name} {latest.value:g} on {latest.result_date} ({desc})"])
 
     return run
