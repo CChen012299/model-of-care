@@ -126,6 +126,7 @@ def _load_patients(
             tasks=tasks[pid],
         )
         for pid in ids
+        if pid in patients
     ]
 
 
