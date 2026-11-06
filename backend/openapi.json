@@ -1,0 +1,1375 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Model of Care: Clinical Rules Engine",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_api_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health Api Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/meta": {
+      "get": {
+        "summary": "Meta",
+        "description": "Run info plus the values the frontend needs for its filter dropdowns.",
+        "operationId": "meta_api_meta_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Meta"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/patients": {
+      "get": {
+        "summary": "List Patients",
+        "description": "Patients with their enrollments, risk tiers, needs and active tasks.\n\nTasks are always limited to what the caller's role may see, and narrowed by\nspecialty / task_type when given. Needs and enrollments are always complete.",
+        "operationId": "list_patients_api_patients_get",
+        "parameters": [
+          {
+            "name": "specialty",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only patients with an open task for this specialty",
+              "title": "Specialty"
+            },
+            "description": "Only patients with an open task for this specialty"
+          },
+          {
+            "name": "task_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/TaskType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only patients with an open task of this type",
+              "title": "Task Type"
+            },
+            "description": "Only patients with an open task of this type"
+          },
+          {
+            "name": "program",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only patients enrolled in this program (id)",
+              "title": "Program"
+            },
+            "description": "Only patients enrolled in this program (id)"
+          },
+          {
+            "name": "tier",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only patients in this tier",
+              "title": "Tier"
+            },
+            "description": "Only patients in this tier"
+          },
+          {
+            "name": "has_tasks",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Only patients with at least one visible open task",
+              "default": false,
+              "title": "Has Tasks"
+            },
+            "description": "Only patients with at least one visible open task"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Name or patient ID contains",
+              "title": "Search"
+            },
+            "description": "Name or patient ID contains"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Caller role (alternative to the X-Role header)",
+              "title": "Role"
+            },
+            "description": "Caller role (alternative to the X-Role header)"
+          },
+          {
+            "name": "X-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Role"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/patients/{patient_id}": {
+      "get": {
+        "summary": "Get Patient",
+        "description": "One patient with full clinical history, for reviewing a task.",
+        "operationId": "get_patient_api_patients__patient_id__get",
+        "parameters": [
+          {
+            "name": "patient_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Patient Id"
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Caller role (alternative to the X-Role header)",
+              "title": "Role"
+            },
+            "description": "Caller role (alternative to the X-Role header)"
+          },
+          {
+            "name": "X-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Role"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tasks": {
+      "get": {
+        "summary": "List Tasks",
+        "description": "The worklist: one row per open task, sorted by priority then most overdue.",
+        "operationId": "list_tasks_api_tasks_get",
+        "parameters": [
+          {
+            "name": "specialty",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Specialty"
+            }
+          },
+          {
+            "name": "task_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/TaskType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Task Type"
+            }
+          },
+          {
+            "name": "program",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Tasks whose need was requested by this program",
+              "title": "Program"
+            },
+            "description": "Tasks whose need was requested by this program"
+          },
+          {
+            "name": "tier",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tier"
+            }
+          },
+          {
+            "name": "priority",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Priority"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Patient name or ID contains",
+              "title": "Search"
+            },
+            "description": "Patient name or ID contains"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Caller role (alternative to the X-Role header)",
+              "title": "Role"
+            },
+            "description": "Caller role (alternative to the X-Role header)"
+          },
+          {
+            "name": "X-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Role"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Role"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DiagnosisOut": {
+        "properties": {
+          "icd_code": {
+            "type": "string",
+            "title": "Icd Code"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "diagnosed_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Diagnosed Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "icd_code",
+          "description",
+          "diagnosed_date"
+        ],
+        "title": "DiagnosisOut"
+      },
+      "EncounterOut": {
+        "properties": {
+          "specialty": {
+            "type": "string",
+            "title": "Specialty"
+          },
+          "encounter_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Encounter Date"
+          },
+          "provider_name": {
+            "type": "string",
+            "title": "Provider Name"
+          },
+          "upcoming": {
+            "type": "boolean",
+            "title": "Upcoming"
+          }
+        },
+        "type": "object",
+        "required": [
+          "specialty",
+          "encounter_date",
+          "provider_name",
+          "upcoming"
+        ],
+        "title": "EncounterOut"
+      },
+      "EnrollmentOut": {
+        "properties": {
+          "program_id": {
+            "type": "string",
+            "title": "Program Id"
+          },
+          "program_name": {
+            "type": "string",
+            "title": "Program Name"
+          },
+          "tier": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tier"
+          },
+          "eligibility_reason": {
+            "type": "string",
+            "title": "Eligibility Reason"
+          },
+          "tier_reason": {
+            "type": "string",
+            "title": "Tier Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "program_id",
+          "program_name",
+          "tier",
+          "eligibility_reason",
+          "tier_reason"
+        ],
+        "title": "EnrollmentOut"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "LabOut": {
+        "properties": {
+          "test_name": {
+            "type": "string",
+            "title": "Test Name"
+          },
+          "result_value": {
+            "type": "number",
+            "title": "Result Value"
+          },
+          "result_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Result Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "test_name",
+          "result_value",
+          "result_date"
+        ],
+        "title": "LabOut"
+      },
+      "Meta": {
+        "properties": {
+          "run": {
+            "$ref": "#/components/schemas/RunOut"
+          },
+          "programs": {
+            "items": {
+              "$ref": "#/components/schemas/ProgramOut"
+            },
+            "type": "array",
+            "title": "Programs"
+          },
+          "specialties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Specialties"
+          },
+          "task_types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Task Types"
+          },
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/RoleOut"
+            },
+            "type": "array",
+            "title": "Roles"
+          }
+        },
+        "type": "object",
+        "required": [
+          "run",
+          "programs",
+          "specialties",
+          "task_types",
+          "roles"
+        ],
+        "title": "Meta"
+      },
+      "NeedOut": {
+        "properties": {
+          "need_key": {
+            "type": "string",
+            "title": "Need Key"
+          },
+          "need_type": {
+            "type": "string",
+            "title": "Need Type"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target"
+          },
+          "cadence_days": {
+            "type": "integer",
+            "title": "Cadence Days"
+          },
+          "priority": {
+            "type": "string",
+            "title": "Priority"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "last_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Date"
+          },
+          "next_scheduled_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Scheduled Date"
+          },
+          "due_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Date"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/NeedSourceOut"
+            },
+            "type": "array",
+            "title": "Sources"
+          }
+        },
+        "type": "object",
+        "required": [
+          "need_key",
+          "need_type",
+          "target",
+          "cadence_days",
+          "priority",
+          "note",
+          "status",
+          "last_date",
+          "next_scheduled_date",
+          "due_date",
+          "sources"
+        ],
+        "title": "NeedOut"
+      },
+      "NeedSourceOut": {
+        "properties": {
+          "program_id": {
+            "type": "string",
+            "title": "Program Id"
+          },
+          "tier": {
+            "type": "string",
+            "title": "Tier"
+          },
+          "cadence_days": {
+            "type": "integer",
+            "title": "Cadence Days"
+          }
+        },
+        "type": "object",
+        "required": [
+          "program_id",
+          "tier",
+          "cadence_days"
+        ],
+        "title": "NeedSourceOut"
+      },
+      "PatientDetail": {
+        "properties": {
+          "patient_id": {
+            "type": "string",
+            "title": "Patient Id"
+          },
+          "first_name": {
+            "type": "string",
+            "title": "First Name"
+          },
+          "last_name": {
+            "type": "string",
+            "title": "Last Name"
+          },
+          "age": {
+            "type": "integer",
+            "title": "Age"
+          },
+          "gender": {
+            "type": "string",
+            "title": "Gender"
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language"
+          },
+          "pcp_provider_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pcp Provider Name"
+          },
+          "enrollments": {
+            "items": {
+              "$ref": "#/components/schemas/EnrollmentOut"
+            },
+            "type": "array",
+            "title": "Enrollments"
+          },
+          "needs": {
+            "items": {
+              "$ref": "#/components/schemas/NeedOut"
+            },
+            "type": "array",
+            "title": "Needs"
+          },
+          "tasks": {
+            "items": {
+              "$ref": "#/components/schemas/TaskOut"
+            },
+            "type": "array",
+            "title": "Tasks"
+          },
+          "diagnoses": {
+            "items": {
+              "$ref": "#/components/schemas/DiagnosisOut"
+            },
+            "type": "array",
+            "title": "Diagnoses"
+          },
+          "labs": {
+            "items": {
+              "$ref": "#/components/schemas/LabOut"
+            },
+            "type": "array",
+            "title": "Labs"
+          },
+          "encounters": {
+            "items": {
+              "$ref": "#/components/schemas/EncounterOut"
+            },
+            "type": "array",
+            "title": "Encounters"
+          }
+        },
+        "type": "object",
+        "required": [
+          "patient_id",
+          "first_name",
+          "last_name",
+          "age",
+          "gender",
+          "phone",
+          "language",
+          "pcp_provider_name",
+          "enrollments",
+          "needs",
+          "tasks",
+          "diagnoses",
+          "labs",
+          "encounters"
+        ],
+        "title": "PatientDetail"
+      },
+      "PatientList": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PatientOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "limit",
+          "offset",
+          "items"
+        ],
+        "title": "PatientList"
+      },
+      "PatientOut": {
+        "properties": {
+          "patient_id": {
+            "type": "string",
+            "title": "Patient Id"
+          },
+          "first_name": {
+            "type": "string",
+            "title": "First Name"
+          },
+          "last_name": {
+            "type": "string",
+            "title": "Last Name"
+          },
+          "age": {
+            "type": "integer",
+            "title": "Age"
+          },
+          "gender": {
+            "type": "string",
+            "title": "Gender"
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language"
+          },
+          "pcp_provider_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pcp Provider Name"
+          },
+          "enrollments": {
+            "items": {
+              "$ref": "#/components/schemas/EnrollmentOut"
+            },
+            "type": "array",
+            "title": "Enrollments"
+          },
+          "needs": {
+            "items": {
+              "$ref": "#/components/schemas/NeedOut"
+            },
+            "type": "array",
+            "title": "Needs"
+          },
+          "tasks": {
+            "items": {
+              "$ref": "#/components/schemas/TaskOut"
+            },
+            "type": "array",
+            "title": "Tasks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "patient_id",
+          "first_name",
+          "last_name",
+          "age",
+          "gender",
+          "phone",
+          "language",
+          "pcp_provider_name",
+          "enrollments",
+          "needs",
+          "tasks"
+        ],
+        "title": "PatientOut"
+      },
+      "PatientSummary": {
+        "properties": {
+          "patient_id": {
+            "type": "string",
+            "title": "Patient Id"
+          },
+          "first_name": {
+            "type": "string",
+            "title": "First Name"
+          },
+          "last_name": {
+            "type": "string",
+            "title": "Last Name"
+          },
+          "age": {
+            "type": "integer",
+            "title": "Age"
+          },
+          "gender": {
+            "type": "string",
+            "title": "Gender"
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language"
+          },
+          "pcp_provider_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pcp Provider Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "patient_id",
+          "first_name",
+          "last_name",
+          "age",
+          "gender",
+          "phone",
+          "language",
+          "pcp_provider_name"
+        ],
+        "title": "PatientSummary"
+      },
+      "ProgramOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "tiers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tiers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "tiers"
+        ],
+        "title": "ProgramOut"
+      },
+      "Role": {
+        "type": "string",
+        "enum": [
+          "scheduler",
+          "clinical"
+        ],
+        "title": "Role"
+      },
+      "RoleOut": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "task_types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Task Types"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "task_types"
+        ],
+        "title": "RoleOut"
+      },
+      "RunOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date",
+            "title": "As Of"
+          },
+          "rules_version": {
+            "type": "string",
+            "title": "Rules Version"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "patients_evaluated": {
+            "type": "integer",
+            "title": "Patients Evaluated"
+          },
+          "enrollments": {
+            "type": "integer",
+            "title": "Enrollments"
+          },
+          "needs": {
+            "type": "integer",
+            "title": "Needs"
+          },
+          "tasks_open": {
+            "type": "integer",
+            "title": "Tasks Open"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "as_of",
+          "rules_version",
+          "finished_at",
+          "patients_evaluated",
+          "enrollments",
+          "needs",
+          "tasks_open"
+        ],
+        "title": "RunOut"
+      },
+      "TaskList": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/WorklistItem"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "limit",
+          "offset",
+          "items"
+        ],
+        "title": "TaskList"
+      },
+      "TaskOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "task_type": {
+            "type": "string",
+            "title": "Task Type"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target"
+          },
+          "priority": {
+            "type": "string",
+            "title": "Priority"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "due_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Date"
+          },
+          "days_overdue": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days Overdue"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "task_type",
+          "target",
+          "priority",
+          "status",
+          "due_date",
+          "days_overdue",
+          "reason"
+        ],
+        "title": "TaskOut"
+      },
+      "TaskSourceOut": {
+        "properties": {
+          "program_id": {
+            "type": "string",
+            "title": "Program Id"
+          },
+          "program_name": {
+            "type": "string",
+            "title": "Program Name"
+          },
+          "tier": {
+            "type": "string",
+            "title": "Tier"
+          }
+        },
+        "type": "object",
+        "required": [
+          "program_id",
+          "program_name",
+          "tier"
+        ],
+        "title": "TaskSourceOut",
+        "description": "A program/tier that requested the need behind a task."
+      },
+      "TaskType": {
+        "type": "string",
+        "enum": [
+          "scheduling",
+          "referral"
+        ],
+        "title": "TaskType"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "WorklistItem": {
+        "properties": {
+          "task": {
+            "$ref": "#/components/schemas/TaskOut"
+          },
+          "patient": {
+            "$ref": "#/components/schemas/PatientSummary"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/TaskSourceOut"
+            },
+            "type": "array",
+            "title": "Sources"
+          }
+        },
+        "type": "object",
+        "required": [
+          "task",
+          "patient",
+          "sources"
+        ],
+        "title": "WorklistItem"
+      }
+    }
+  }
+}
