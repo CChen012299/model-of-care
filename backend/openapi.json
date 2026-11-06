@@ -383,22 +383,6 @@
             }
           },
           {
-            "name": "priority",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Priority"
-            }
-          },
-          {
             "name": "search",
             "in": "query",
             "required": false,

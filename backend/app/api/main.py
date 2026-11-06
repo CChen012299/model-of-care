@@ -20,7 +20,7 @@ from sqlalchemy.orm import Session
 from app.api import queries, schemas
 from app.api.roles import ROLE_TASK_TYPES, Role, TaskType, get_role, visible_task_types
 from app.db import init_db, make_engine, make_session_factory
-from app.engine.domain import PRIORITY_RANK, norm
+from app.engine.domain import norm
 from app.engine.rules import RuleCatalog, load_catalog
 from app.engine.runner import run_engine
 from app.ingest import load_csvs
@@ -151,15 +151,12 @@ def list_tasks(
     task_type: TaskType | None = Query(None),
     program: str | None = Query(None, description="Tasks whose need was requested by this program"),
     tier: str | None = Query(None),
-    priority: str | None = Query(None),
     search: str | None = Query(None, description="Patient name or ID contains"),
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
     ctx: RequestContext = Depends(get_ctx),
 ) -> schemas.TaskList:
     """The worklist: one row per open task, sorted by priority then most overdue."""
-    if priority and priority not in PRIORITY_RANK:
-        raise HTTPException(status_code=400, detail=f"Unknown priority {priority!r}")
     spec = _specialty(ctx.catalog, specialty)
     program, tier = _program_tier(ctx.catalog, program, tier)
     return queries.list_tasks(
@@ -170,7 +167,6 @@ def list_tasks(
         specialty=spec,
         program=program,
         tier=tier,
-        priority=priority,
         search=search,
         limit=limit,
         offset=offset,

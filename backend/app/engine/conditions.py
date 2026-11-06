@@ -131,16 +131,6 @@ def _any(params: Any, value_sets: Mapping[str, ValueSet], path: str) -> Conditio
     return run
 
 
-@register("not")
-def _not(params: Any, value_sets: Mapping[str, ValueSet], path: str) -> Condition:
-    child = compile_condition(params, value_sets, path)
-
-    def run(ctx: PatientContext, as_of: date) -> Match:
-        return Match(not child(ctx, as_of).ok)
-
-    return run
-
-
 # --------------------------------------------------------------------------- #
 # Demographics
 # --------------------------------------------------------------------------- #
@@ -153,17 +143,6 @@ def _age_gte(params: Any, _vs: Mapping[str, ValueSet], path: str) -> Condition:
     def run(ctx: PatientContext, as_of: date) -> Match:
         age = ctx.age_on(as_of)
         return Match(age >= threshold, [f"Age {age} (>= {threshold})"])
-
-    return run
-
-
-@register("age_lt")
-def _age_lt(params: Any, _vs: Mapping[str, ValueSet], path: str) -> Condition:
-    threshold = _int(params, path)
-
-    def run(ctx: PatientContext, as_of: date) -> Match:
-        age = ctx.age_on(as_of)
-        return Match(age < threshold, [f"Age {age} (< {threshold})"])
 
     return run
 

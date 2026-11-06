@@ -92,7 +92,7 @@ class PatientContext:
 # Rule definitions
 # --------------------------------------------------------------------------- #
 
-PRIORITY_RANK = {"routine": 0, "high": 1, "urgent": 2}
+PRIORITY_RANK = {"routine": 0, "high": 1}
 
 
 @dataclass(frozen=True)
@@ -107,7 +107,6 @@ class ValueSet:
 @dataclass(frozen=True)
 class Specialty:
     name: str
-    category: str  # primary_care | specialist
     # Never-seen patients get a referral task (clinical review) only when True.
     referral_required: bool
 

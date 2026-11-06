@@ -551,7 +551,6 @@ export interface operations {
                 /** @description Tasks whose need was requested by this program */
                 program?: string | null;
                 tier?: string | null;
-                priority?: string | null;
                 /** @description Patient name or ID contains */
                 search?: string | null;
                 limit?: number;

@@ -69,11 +69,10 @@ def _load_specialties(path: Path) -> dict[str, Specialty]:
     raw = _load_yaml(path) or {}
     out: dict[str, Specialty] = {}
     for name, body in raw.items():
-        body = body or {}
-        category = body.get("category")
-        if category not in {"primary_care", "specialist"}:
-            raise RulesConfigError(f"specialties.{name}: category must be primary_care or specialist")
-        out[norm(name)] = Specialty(name, category, bool(body.get("referral_required", category == "specialist")))
+        referral = (body or {}).get("referral_required")
+        if not isinstance(referral, bool):
+            raise RulesConfigError(f"specialties.{name}: referral_required must be true or false")
+        out[norm(name)] = Specialty(name, referral)
     return out
 
 

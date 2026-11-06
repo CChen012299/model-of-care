@@ -15,7 +15,7 @@ from __future__ import annotations
 import logging
 from collections import defaultdict
 from collections.abc import Iterable
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
@@ -60,7 +60,7 @@ def build_contexts(session: Session) -> Iterable[PatientContext]:
 
 
 def run_engine(session: Session, catalog: RuleCatalog, as_of: date) -> EngineRun:
-    run = EngineRun(as_of=as_of, rules_version=catalog.version, started_at=datetime.now(timezone.utc))
+    run = EngineRun(as_of=as_of, rules_version=catalog.version, started_at=datetime.now(UTC))
     session.add(run)
     session.flush()
 
@@ -141,7 +141,7 @@ def run_engine(session: Session, catalog: RuleCatalog, as_of: date) -> EngineRun
     run.tasks_open = len(drafts)
     run.tasks_created = created
     run.tasks_resolved = resolved
-    run.finished_at = datetime.now(timezone.utc)
+    run.finished_at = datetime.now(UTC)
     session.commit()
     log.info(
         "Engine run %s as_of=%s rules=%s: %s patients, %s enrollments, %s needs, %s open tasks (+%s new, %s resolved)",

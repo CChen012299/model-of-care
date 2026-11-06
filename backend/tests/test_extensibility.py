@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import shutil
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -15,7 +16,9 @@ HYPERTENSION_PROGRAM = """
 id: hypertension_management
 name: Hypertension Management
 eligibility:
-  has_diagnosis: { codes: [I10] }
+  all:
+    - age_gte: 18
+    - has_diagnosis: { codes: [I10] }
 tiers:
   - name: Enrolled
     needs:
@@ -36,6 +39,9 @@ def test_new_program_is_just_a_yaml_file(rules_copy):
     r = evaluate_patient(make_ctx(dx=("I10",)), catalog, AS_OF)
     assert ("hypertension_management", "Enrolled") in {(e.program_id, e.tier) for e in r.enrollments}
     assert {t.target: t.task_type for t in r.tasks} == {"Cardiology": "referral"}
+    # `all` requires every branch: a hypertensive minor is not enrolled.
+    minor = evaluate_patient(make_ctx(dob=date(2015, 1, 1), dx=("I10",)), catalog, AS_OF)
+    assert minor.enrollments == []
 
 
 def test_overlapping_needs_merge_to_strictest_cadence(rules_copy):

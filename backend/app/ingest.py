@@ -1,8 +1,9 @@
 """Load the provided CSVs into the source tables.
 
-The CSVs are treated as a full snapshot: source tables are cleared and
-reloaded. Rows that fail validation are skipped and counted rather than
-failing the whole load, so one bad row cannot block the worklist.
+The CSVs are treated as a full snapshot: diagnoses, labs and encounters are
+reloaded, patients are upserted. Rows that fail validation are skipped and
+counted rather than failing the whole load, so one bad row cannot block the
+worklist.
 """
 from __future__ import annotations
 
@@ -12,7 +13,7 @@ from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 
-from sqlalchemy import delete
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from app.models import Diagnosis, Encounter, LabResult, Patient
@@ -59,11 +60,12 @@ def _read(path: Path) -> list[dict[str, str]]:
 def load_csvs(session: Session, data_dir: Path) -> LoadReport:
     report = LoadReport()
 
-    # Children first, so foreign keys never point at a missing patient.
-    for model in (Encounter, LabResult, Diagnosis, Patient):
+    # Clinical history is replaced wholesale. Patients are upserted instead,
+    # because enrollments, needs and tasks reference them.
+    for model in (Encounter, LabResult, Diagnosis):
         session.execute(delete(model))
+    existing = {p.patient_id: p for p in session.scalars(select(Patient))}
 
-    # Patients
     rep = report.tables["patients"] = TableReport()
     patient_ids: set[str] = set()
     for i, row in enumerate(_read(data_dir / "patients.csv"), start=2):
@@ -74,22 +76,26 @@ def load_csvs(session: Session, data_dir: Path) -> LoadReport:
             if pid in patient_ids:
                 rep.duplicates += 1
                 continue
-            session.add(
-                Patient(
-                    patient_id=pid,
-                    first_name=_clean(row["first_name"]) or "",
-                    last_name=_clean(row["last_name"]) or "",
-                    date_of_birth=_parse_date(row["date_of_birth"]),
-                    gender=_clean(row["gender"]) or "",
-                    phone=_clean(row["phone"]) or "",
-                    language=_clean(row["language"]) or "",
-                    pcp_provider_name=_clean(row["pcp_provider_name"]),
-                )
+            fields = dict(
+                first_name=_clean(row["first_name"]) or "",
+                last_name=_clean(row["last_name"]) or "",
+                date_of_birth=_parse_date(row["date_of_birth"]),
+                gender=_clean(row["gender"]) or "",
+                phone=_clean(row["phone"]) or "",
+                language=_clean(row["language"]) or "",
+                pcp_provider_name=_clean(row["pcp_provider_name"]),
             )
+            if pid in existing:
+                for key, value in fields.items():
+                    setattr(existing[pid], key, value)
+            else:
+                session.add(Patient(patient_id=pid, **fields))
             patient_ids.add(pid)
             rep.loaded += 1
         except (ValueError, KeyError) as exc:
             rep.skipped.append(f"patients.csv line {i}: {exc}")
+    if stale := existing.keys() - patient_ids:
+        log.warning("%d patients are no longer in patients.csv and were kept", len(stale))
     session.flush()
 
     def child_rows(filename: str, table: str, build, dedupe_key):

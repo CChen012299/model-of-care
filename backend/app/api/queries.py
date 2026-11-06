@@ -17,7 +17,7 @@ from app.engine.domain import age_on
 from app.engine.rules import RuleCatalog
 from app.models import Diagnosis, Encounter, EngineRun, Enrollment, LabResult, Need, NeedSource, Patient, Task
 
-_PRIORITY_ORDER = case({"urgent": 2, "high": 1}, value=Task.priority, else_=0)
+_PRIORITY_ORDER = case({"high": 1}, value=Task.priority, else_=0)
 
 
 def latest_run(session: Session) -> EngineRun | None:
@@ -173,7 +173,6 @@ def list_tasks(
     specialty: str | None,
     program: str | None,
     tier: str | None,
-    priority: str | None,
     search: str | None,
     limit: int,
     offset: int,
@@ -182,8 +181,6 @@ def list_tasks(
         return schemas.TaskList(total=0, limit=limit, offset=offset, items=[])
 
     q: Select = select(Task).where(*_open_task_filter(types, specialty))
-    if priority:
-        q = q.where(Task.priority == priority)
     if program or tier:
         # A task belongs to a program if that program requested the underlying need.
         src = (

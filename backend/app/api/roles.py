@@ -10,17 +10,17 @@ API easy to try in a browser.
 """
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 from fastapi import Header, HTTPException, Query
 
 
-class Role(str, Enum):
+class Role(StrEnum):
     scheduler = "scheduler"
     clinical = "clinical"
 
 
-class TaskType(str, Enum):
+class TaskType(StrEnum):
     scheduling = "scheduling"
     referral = "referral"
 

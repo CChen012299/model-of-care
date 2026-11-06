@@ -59,6 +59,15 @@ def test_rerun_is_idempotent(session, catalog):
     assert session.scalar(select(func.count()).select_from(Task)) == first.tasks_open
 
 
+def test_reseed_after_run_keeps_tasks(session, catalog, test_settings):
+    # Foreign keys are enforced (as on SQL Server): reloading CSVs must not
+    # delete patients that enrollments, needs and tasks still reference.
+    first = run_engine(session, catalog, date(2026, 4, 15))
+    load_csvs(session, test_settings.data_dir)
+    second = run_engine(session, catalog, date(2026, 4, 15))
+    assert (second.tasks_open, second.tasks_created, second.tasks_resolved) == (first.tasks_open, 0, 0)
+
+
 def test_rerun_later_resolves_and_creates_tasks(session, catalog):
     run_engine(session, catalog, date(2026, 4, 15))
     later = run_engine(session, catalog, date(2026, 11, 6))
