@@ -136,6 +136,12 @@ curl "localhost:8000/api/tasks?role=clinical&task_type=referral"
 * All UI state is in the URL, so views can be bookmarked, for example
   `/?role=scheduler&specialty=Endocrinology`.
 
+| Scheduler worklist, filtered to Endocrinology | Clinical team, patients view |
+|---|---|
+| ![Scheduler worklist](docs/screenshots/worklist-scheduler.png) | ![Patients view](docs/screenshots/patients-clinical.png) |
+
+Patient detail: ![Patient detail](docs/screenshots/patient-detail.png)
+
 ---
 
 ## Project layout
