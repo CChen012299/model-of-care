@@ -55,9 +55,7 @@ def compile_condition(node: Any, value_sets: Mapping[str, ValueSet], path: str) 
     return builder(params, value_sets, f"{path}.{name}")
 
 
-# --------------------------------------------------------------------------- #
 # Param helpers
-# --------------------------------------------------------------------------- #
 
 
 def _number(value: Any, path: str) -> float:
@@ -94,9 +92,7 @@ def icd_matches(code: str, prefix: str) -> bool:
     return bool(p) and c.startswith(p)
 
 
-# --------------------------------------------------------------------------- #
 # Boolean combinators
-# --------------------------------------------------------------------------- #
 
 
 @register("all")
@@ -131,9 +127,7 @@ def _any(params: Any, value_sets: Mapping[str, ValueSet], path: str) -> Conditio
     return run
 
 
-# --------------------------------------------------------------------------- #
 # Demographics
-# --------------------------------------------------------------------------- #
 
 
 @register("age_gte")
@@ -147,9 +141,7 @@ def _age_gte(params: Any, _vs: Mapping[str, ValueSet], path: str) -> Condition:
     return run
 
 
-# --------------------------------------------------------------------------- #
 # Diagnoses
-# --------------------------------------------------------------------------- #
 
 
 @register("has_diagnosis")
@@ -175,9 +167,7 @@ def _has_diagnosis(params: Any, value_sets: Mapping[str, ValueSet], path: str) -
     return run
 
 
-# --------------------------------------------------------------------------- #
 # Labs
-# --------------------------------------------------------------------------- #
 
 _BOUNDS = {"gte": (">=", lambda v, b: v >= b), "gt": (">", lambda v, b: v > b),
            "lte": ("<=", lambda v, b: v <= b), "lt": ("<", lambda v, b: v < b)}

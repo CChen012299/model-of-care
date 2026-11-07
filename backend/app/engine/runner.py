@@ -66,7 +66,7 @@ def run_engine(session: Session, catalog: RuleCatalog, as_of: date) -> EngineRun
 
     evaluations: list[PatientEvaluation] = [evaluate_patient(ctx, catalog, as_of) for ctx in build_contexts(session)]
 
-    # -- Replace the derived snapshot ------------------------------------- #
+    # Replace the derived snapshot.
     session.execute(delete(NeedSource))
     session.execute(delete(Need))
     session.execute(delete(Enrollment))
@@ -75,7 +75,6 @@ def run_engine(session: Session, catalog: RuleCatalog, as_of: date) -> EngineRun
         for e in ev.enrollments:
             session.add(
                 Enrollment(
-                    run_id=run.id,
                     patient_id=ev.patient_id,
                     program_id=e.program_id,
                     program_name=e.program_name,
@@ -88,7 +87,6 @@ def run_engine(session: Session, catalog: RuleCatalog, as_of: date) -> EngineRun
             need_status[(ev.patient_id, n.need_key)] = n.status
             session.add(
                 Need(
-                    run_id=run.id,
                     patient_id=ev.patient_id,
                     need_key=n.need_key,
                     need_type=n.need_type,
@@ -104,7 +102,7 @@ def run_engine(session: Session, catalog: RuleCatalog, as_of: date) -> EngineRun
                 )
             )
 
-    # -- Reconcile durable tasks ------------------------------------------ #
+    # Reconcile durable tasks.
     drafts = {t.task_key: (ev.patient_id, t) for ev in evaluations for t in ev.tasks}
     existing = {t.task_key: t for t in session.scalars(select(Task))}
     created = 0
@@ -122,7 +120,6 @@ def run_engine(session: Session, catalog: RuleCatalog, as_of: date) -> EngineRun
         task.days_overdue = d.days_overdue
         task.reason = d.reason
         task.status = "open"
-        task.last_seen_run_id = run.id
         task.resolved_run_id = None
         task.resolution = None
 
@@ -132,7 +129,7 @@ def run_engine(session: Session, catalog: RuleCatalog, as_of: date) -> EngineRun
             status = need_status.get((task.patient_id, task.need_key))
             task.status = "resolved"
             task.resolved_run_id = run.id
-            task.resolution = _RESOLUTION_BY_STATUS.get(status, "Need no longer applies")
+            task.resolution = _RESOLUTION_BY_STATUS[status] if status else "Need no longer applies"
             resolved += 1
 
     run.patients_evaluated = len(evaluations)

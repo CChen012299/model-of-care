@@ -76,15 +76,15 @@ def load_csvs(session: Session, data_dir: Path) -> LoadReport:
             if pid in patient_ids:
                 rep.duplicates += 1
                 continue
-            fields = dict(
-                first_name=_clean(row["first_name"]) or "",
-                last_name=_clean(row["last_name"]) or "",
-                date_of_birth=_parse_date(row["date_of_birth"]),
-                gender=_clean(row["gender"]) or "",
-                phone=_clean(row["phone"]) or "",
-                language=_clean(row["language"]) or "",
-                pcp_provider_name=_clean(row["pcp_provider_name"]),
-            )
+            fields = {
+                "first_name": _clean(row["first_name"]) or "",
+                "last_name": _clean(row["last_name"]) or "",
+                "date_of_birth": _parse_date(row["date_of_birth"]),
+                "gender": _clean(row["gender"]) or "",
+                "phone": _clean(row["phone"]) or "",
+                "language": _clean(row["language"]) or "",
+                "pcp_provider_name": _clean(row["pcp_provider_name"]),
+            }
             if pid in existing:
                 for key, value in fields.items():
                     setattr(existing[pid], key, value)

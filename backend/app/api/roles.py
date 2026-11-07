@@ -32,8 +32,6 @@ ROLE_TASK_TYPES: dict[Role, frozenset[str]] = {
     Role.clinical: frozenset({"scheduling", "referral"}),
 }
 
-ALL_TASK_TYPES = sorted(set().union(*ROLE_TASK_TYPES.values()))
-
 
 def get_role(
     x_role: Role | None = Header(default=None, alias="X-Role"),

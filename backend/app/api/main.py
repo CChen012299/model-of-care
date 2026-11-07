@@ -45,9 +45,7 @@ def get_ctx(request: Request) -> Iterator[RequestContext]:
         yield RequestContext(session, run, request.app.state.catalog)
 
 
-# --------------------------------------------------------------------------- #
 # Filter validation: reject typos instead of silently returning nothing
-# --------------------------------------------------------------------------- #
 
 
 def _specialty(catalog: RuleCatalog, value: str | None) -> str | None:
@@ -71,9 +69,7 @@ def _program_tier(catalog: RuleCatalog, program: str | None, tier: str | None) -
     return program, tier
 
 
-# --------------------------------------------------------------------------- #
 # Routes
-# --------------------------------------------------------------------------- #
 
 router = APIRouter(prefix="/api")
 
@@ -173,9 +169,7 @@ def list_tasks(
     )
 
 
-# --------------------------------------------------------------------------- #
 # App factory
-# --------------------------------------------------------------------------- #
 
 
 def create_app(settings: Settings | None = None, *, run_on_startup: bool = True) -> FastAPI:

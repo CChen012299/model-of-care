@@ -1,7 +1,7 @@
 import { useEffect, useState, type DependencyList } from "react";
 import { EMPTY_FILTERS, type Filters, type Role, type View } from "./api/types";
 
-export interface AsyncState<T> {
+interface AsyncState<T> {
   data?: T;
   error?: string;
   loading: boolean;

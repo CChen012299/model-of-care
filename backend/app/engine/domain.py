@@ -6,9 +6,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import date
 
-# --------------------------------------------------------------------------- #
 # Helpers
-# --------------------------------------------------------------------------- #
 
 
 def age_on(dob: date, on: date) -> int:
@@ -29,9 +27,7 @@ def norm(value: str) -> str:
     return " ".join(value.split()).casefold()
 
 
-# --------------------------------------------------------------------------- #
 # Inputs
-# --------------------------------------------------------------------------- #
 
 
 @dataclass(frozen=True)
@@ -88,9 +84,7 @@ class PatientContext:
         return self._enc_by_specialty.get(norm(specialty), [])
 
 
-# --------------------------------------------------------------------------- #
 # Rule definitions
-# --------------------------------------------------------------------------- #
 
 PRIORITY_RANK = {"routine": 0, "high": 1}
 
@@ -126,9 +120,7 @@ class NeedSpec:
         return f"{self.need_type}:{self.target}"
 
 
-# --------------------------------------------------------------------------- #
 # Outputs
-# --------------------------------------------------------------------------- #
 
 
 @dataclass

@@ -61,7 +61,7 @@ table.compact th, table.compact td { padding: 5px 8px; }
 .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
 .badge-scheduling { background: #e6f4ea; color: #1e6b34; }
 .badge-referral { background: #fff1e0; color: #9a4a00; }
-.badge-priority-high, .badge-priority-urgent { background: #fde8e8; color: #b42318; }
+.badge-priority-high { background: #fde8e8; color: #b42318; }
 .badge-scheduled { background: #e8f0ff; color: #2456c8; }
 
 .wrap { display: flex; flex-wrap: wrap; gap: 4px; }

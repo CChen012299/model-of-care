@@ -20,9 +20,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
 
-# --------------------------------------------------------------------------- #
 # Source data
-# --------------------------------------------------------------------------- #
 
 
 class Patient(Base):
@@ -70,9 +68,7 @@ class Encounter(Base):
     provider_name: Mapped[str] = mapped_column(String(120))
 
 
-# --------------------------------------------------------------------------- #
 # Engine runs and derived snapshot
-# --------------------------------------------------------------------------- #
 
 
 class EngineRun(Base):
@@ -96,7 +92,6 @@ class Enrollment(Base):
     __table_args__ = (UniqueConstraint("patient_id", "program_id", name="uq_enrollment_patient_program"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    run_id: Mapped[int] = mapped_column(ForeignKey("engine_runs.id"))
     patient_id: Mapped[str] = mapped_column(ForeignKey("patients.patient_id"), index=True)
     program_id: Mapped[str] = mapped_column(String(60), index=True)
     program_name: Mapped[str] = mapped_column(String(120))
@@ -112,7 +107,6 @@ class Need(Base):
     __table_args__ = (UniqueConstraint("patient_id", "need_key", name="uq_need_patient_key"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    run_id: Mapped[int] = mapped_column(ForeignKey("engine_runs.id"))
     patient_id: Mapped[str] = mapped_column(ForeignKey("patients.patient_id"), index=True)
     need_key: Mapped[str] = mapped_column(String(120))
     need_type: Mapped[str] = mapped_column(String(30))  # "visit" today; "lab_order" etc. later
@@ -144,9 +138,7 @@ class NeedSource(Base):
     need: Mapped[Need] = relationship(back_populates="sources")
 
 
-# --------------------------------------------------------------------------- #
 # Durable work items
-# --------------------------------------------------------------------------- #
 
 
 class Task(Base):
@@ -167,6 +159,5 @@ class Task(Base):
     days_overdue: Mapped[int | None] = mapped_column(Integer, nullable=True)
     reason: Mapped[str] = mapped_column(String(500))
     created_run_id: Mapped[int] = mapped_column(ForeignKey("engine_runs.id"))
-    last_seen_run_id: Mapped[int] = mapped_column(ForeignKey("engine_runs.id"))
     resolved_run_id: Mapped[int | None] = mapped_column(ForeignKey("engine_runs.id"), nullable=True)
     resolution: Mapped[str | None] = mapped_column(String(120), nullable=True)
