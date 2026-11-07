@@ -6,23 +6,12 @@ import { Pager } from "./components/Pager";
 import { PatientDrawer } from "./components/PatientDrawer";
 import { PatientsTable } from "./components/PatientsTable";
 import { WorklistTable } from "./components/WorklistTable";
-import { readUrlState, useAsync, writeUrlState, type UiState } from "./hooks";
-
-const PAGE_SIZE = { worklist: 100, patients: 50 } as const;
+import { readUrlState, useAsync, useDebounced, writeUrlState, type UiState } from "./hooks";
 
 const ROLE_HELP: Record<Role, string> = {
   scheduler: "Scheduling tasks only: patients already seen by the specialty whose next visit is overdue. Book directly.",
   clinical: "Scheduling and referral tasks. Referrals are first-time specialist visits that need clinical review before booking.",
 };
-
-function useDebounced<T>(value: T, ms: number): T {
-  const [v, setV] = useState(value);
-  useEffect(() => {
-    const t = setTimeout(() => setV(value), ms);
-    return () => clearTimeout(t);
-  }, [value, ms]);
-  return v;
-}
 
 export default function App() {
   const meta = useAsync((signal) => api.meta(signal), []);
@@ -35,6 +24,7 @@ function Main({ meta }: { meta: Meta }) {
   const [ui, setUi] = useState<UiState>(readUrlState);
   useEffect(() => writeUrlState(ui), [ui]);
 
+  // Any change except paging goes back to the first page.
   const update = (patch: Partial<UiState>) => setUi((s) => ({ ...s, offset: 0, ...patch }));
   const setRole = (role: Role) => {
     // A scheduler cannot filter by a task type they cannot see.
@@ -44,23 +34,13 @@ function Main({ meta }: { meta: Meta }) {
   };
 
   const search = useDebounced(ui.filters.search, 250);
-  const filters: Filters = { ...ui.filters, search };
-  const limit = PAGE_SIZE[ui.view];
-  const key = [ui.role, ui.view, JSON.stringify(filters), ui.hasTasks, ui.offset];
-
-  const tasks = useAsync(
-    (signal) =>
-      ui.view === "worklist" ? api.tasks(ui.role, filters, { limit, offset: ui.offset }, signal) : Promise.resolve(undefined),
-    key,
-  );
-  const patients = useAsync(
-    (signal) =>
-      ui.view === "patients"
-        ? api.patients(ui.role, filters, { hasTasks: ui.hasTasks, limit, offset: ui.offset }, signal)
-        : Promise.resolve(undefined),
-    key,
-  );
-  const current = ui.view === "worklist" ? tasks : patients;
+  const view: ViewProps = {
+    role: ui.role,
+    filters: { ...ui.filters, search },
+    offset: ui.offset,
+    onOffset: (offset) => setUi((s) => ({ ...s, offset })),
+    onOpenPatient: (id) => setUi((s) => ({ ...s, patient: id })),
+  };
   const programNames = useMemo(() => Object.fromEntries(meta.programs.map((p) => [p.id, p.name])), [meta]);
   const closeDrawer = useCallback(() => setUi((s) => ({ ...s, patient: null })), []);
 
@@ -105,31 +85,7 @@ function Main({ meta }: { meta: Meta }) {
         onHasTasks={(hasTasks) => update({ hasTasks })}
       />
 
-      {current.error && <p className="error">{current.error}</p>}
-      <div className={`results ${current.loading ? "loading" : ""}`}>
-        {ui.view === "worklist" && tasks.data && (
-          <>
-            {tasks.data.total > 0 && (
-              <div className="count">
-                {tasks.data.total} open task{tasks.data.total === 1 ? "" : "s"}
-              </div>
-            )}
-            <WorklistTable items={tasks.data.items} onOpenPatient={(id) => setUi((s) => ({ ...s, patient: id }))} />
-            <Pager {...tasks.data} onOffset={(offset) => setUi((s) => ({ ...s, offset }))} />
-          </>
-        )}
-        {ui.view === "patients" && patients.data && (
-          <>
-            {patients.data.total > 0 && (
-              <div className="count">
-                {patients.data.total} patient{patients.data.total === 1 ? "" : "s"}
-              </div>
-            )}
-            <PatientsTable items={patients.data.items} onOpenPatient={(id) => setUi((s) => ({ ...s, patient: id }))} />
-            <Pager {...patients.data} onOffset={(offset) => setUi((s) => ({ ...s, offset }))} />
-          </>
-        )}
-      </div>
+      {ui.view === "worklist" ? <WorklistView {...view} /> : <PatientsView {...view} hasTasks={ui.hasTasks} />}
 
       {ui.patient && (
         <PatientDrawer id={ui.patient} role={ui.role} programNames={programNames} onClose={closeDrawer} />
@@ -137,3 +93,53 @@ function Main({ meta }: { meta: Meta }) {
     </div>
   );
 }
+
+interface ViewProps {
+  role: Role;
+  filters: Filters;
+  offset: number;
+  onOffset: (offset: number) => void;
+  onOpenPatient: (id: string) => void;
+}
+
+function WorklistView({ role, filters, offset, onOffset, onOpenPatient }: ViewProps) {
+  const limit = 100;
+  const { data, error, loading } = useAsync(
+    (signal) => api.tasks(role, filters, { limit, offset }, signal),
+    [role, JSON.stringify(filters), offset],
+  );
+  return (
+    <div className={`results ${loading ? "loading" : ""}`}>
+      {error && <p className="error">{error}</p>}
+      {data && (
+        <>
+          {data.total > 0 && <div className="count">{plural(data.total, "open task")}</div>}
+          <WorklistTable items={data.items} onOpenPatient={onOpenPatient} />
+          <Pager {...data} onOffset={onOffset} />
+        </>
+      )}
+    </div>
+  );
+}
+
+function PatientsView({ role, filters, offset, onOffset, onOpenPatient, hasTasks }: ViewProps & { hasTasks: boolean }) {
+  const limit = 50;
+  const { data, error, loading } = useAsync(
+    (signal) => api.patients(role, filters, { hasTasks, limit, offset }, signal),
+    [role, JSON.stringify(filters), offset, hasTasks],
+  );
+  return (
+    <div className={`results ${loading ? "loading" : ""}`}>
+      {error && <p className="error">{error}</p>}
+      {data && (
+        <>
+          {data.total > 0 && <div className="count">{plural(data.total, "patient")}</div>}
+          <PatientsTable items={data.items} onOpenPatient={onOpenPatient} />
+          <Pager {...data} onOffset={onOffset} />
+        </>
+      )}
+    </div>
+  );
+}
+
+const plural = (n: number, noun: string) => `${n} ${noun}${n === 1 ? "" : "s"}`;

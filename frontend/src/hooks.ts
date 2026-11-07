@@ -57,3 +57,13 @@ export function writeUrlState(s: UiState): void {
   if (s.patient) q.set("patient", s.patient);
   window.history.replaceState(null, "", `?${q}`);
 }
+
+/** The value, once it has stopped changing for `ms` (used for the search box). */
+export function useDebounced<T>(value: T, ms: number): T {
+  const [v, setV] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setV(value), ms);
+    return () => clearTimeout(t);
+  }, [value, ms]);
+  return v;
+}

@@ -15,7 +15,7 @@ Architecture, trade-offs and scaling notes: [docs/ARCHITECTURE.md](docs/ARCHITEC
 
 ## Quick start
 
-Requires Python 3.11+ and Node 20+.
+Requires Python 3.11+ and Node 20+ (tested on Python 3.13 and Node 22).
 
 ```bash
 # 1. Backend
