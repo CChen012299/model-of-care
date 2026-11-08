@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { api } from "./api/client";
 import type { Filters, Meta, Role, View } from "./api/types";
 import { FilterBar } from "./components/FilterBar";
@@ -37,8 +37,10 @@ function Main({ meta }: { meta: Meta }) {
   const view: ViewProps = {
     role: ui.role,
     filters: { ...ui.filters, search },
+    limit: ui.pageSize,
     offset: ui.offset,
     onOffset: (offset) => setUi((s) => ({ ...s, offset })),
+    onLimit: (pageSize) => update({ pageSize }),
     onOpenPatient: (id) => setUi((s) => ({ ...s, patient: id })),
   };
   const programNames = useMemo(() => Object.fromEntries(meta.programs.map((p) => [p.id, p.name])), [meta]);
@@ -97,49 +99,59 @@ function Main({ meta }: { meta: Meta }) {
 interface ViewProps {
   role: Role;
   filters: Filters;
+  limit: number;
   offset: number;
   onOffset: (offset: number) => void;
+  onLimit: (limit: number) => void;
   onOpenPatient: (id: string) => void;
 }
 
-function WorklistView({ role, filters, offset, onOffset, onOpenPatient }: ViewProps) {
-  const limit = 100;
+function WorklistView({ role, filters, limit, offset, onOffset, onLimit, onOpenPatient }: ViewProps) {
   const { data, error, loading } = useAsync(
     (signal) => api.tasks(role, filters, { limit, offset }, signal),
-    [role, JSON.stringify(filters), offset],
+    [role, JSON.stringify(filters), limit, offset],
   );
   return (
     <div className={`results ${loading ? "loading" : ""}`}>
       {error && <p className="error">{error}</p>}
       {data && (
-        <>
-          {data.total > 0 && <div className="count">{plural(data.total, "open task")}</div>}
+        <Results total={data.total} limit={limit} noun="open task" pager={<Pager {...data} onOffset={onOffset} onLimit={onLimit} />}>
           <WorklistTable items={data.items} onOpenPatient={onOpenPatient} />
-          <Pager {...data} onOffset={onOffset} />
-        </>
+        </Results>
       )}
     </div>
   );
 }
 
-function PatientsView({ role, filters, offset, onOffset, onOpenPatient, hasTasks }: ViewProps & { hasTasks: boolean }) {
-  const limit = 50;
+function PatientsView({ role, filters, limit, offset, onOffset, onLimit, onOpenPatient, hasTasks }: ViewProps & { hasTasks: boolean }) {
   const { data, error, loading } = useAsync(
     (signal) => api.patients(role, filters, { hasTasks, limit, offset }, signal),
-    [role, JSON.stringify(filters), offset, hasTasks],
+    [role, JSON.stringify(filters), limit, offset, hasTasks],
   );
   return (
     <div className={`results ${loading ? "loading" : ""}`}>
       {error && <p className="error">{error}</p>}
       {data && (
-        <>
-          {data.total > 0 && <div className="count">{plural(data.total, "patient")}</div>}
+        <Results total={data.total} limit={limit} noun="patient" pager={<Pager {...data} onOffset={onOffset} onLimit={onLimit} />}>
           <PatientsTable items={data.items} onOpenPatient={onOpenPatient} />
-          <Pager {...data} onOffset={onOffset} />
-        </>
+        </Results>
       )}
     </div>
   );
 }
 
-const plural = (n: number, noun: string) => `${n} ${noun}${n === 1 ? "" : "s"}`;
+/** Count and pager above the table; the pager repeats below it when there is more than one page. */
+function Results(props: { total: number; limit: number; noun: string; pager: ReactNode; children: ReactNode }) {
+  const { total, limit, noun, pager, children } = props;
+  if (total === 0) return <>{children}</>;
+  return (
+    <>
+      <div className="results-head">
+        <div className="count">{`${total} ${noun}${total === 1 ? "" : "s"}`}</div>
+        {pager}
+      </div>
+      {children}
+      {total > limit && <div className="results-foot">{pager}</div>}
+    </>
+  );
+}

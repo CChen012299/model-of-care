@@ -131,6 +131,7 @@ curl "localhost:8000/api/tasks?role=clinical&task_type=referral"
   status, and open tasks.
 * **Filters:** specialty, task type (only the types the role can see), program, tier,
   name or ID search.
+* **Rows per page:** 20, 50 or 100 (default 50), with paging above and below the table.
 * Click a patient to see why they landed in each tier, their needs, and their full
   history.
 * All UI state is in the URL, so views can be bookmarked, for example

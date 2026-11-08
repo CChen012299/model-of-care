@@ -23,11 +23,15 @@ export function useAsync<T>(load: (signal: AbortSignal) => Promise<T>, deps: Dep
   return state;
 }
 
+export const PAGE_SIZES = [20, 50, 100] as const;
+export const DEFAULT_PAGE_SIZE = 50;
+
 export interface UiState {
   role: Role;
   view: View;
   filters: Filters;
   hasTasks: boolean;
+  pageSize: number;
   offset: number;
   patient: string | null;
 }
@@ -42,6 +46,7 @@ export function readUrlState(): UiState {
     view: q.get("view") === "patients" ? "patients" : "worklist",
     filters,
     hasTasks: q.get("has_tasks") !== "false",
+    pageSize: PAGE_SIZES.find((n) => n === Number(q.get("page_size"))) ?? DEFAULT_PAGE_SIZE,
     offset: Number(q.get("offset") ?? 0) || 0,
     patient: q.get("patient"),
   };
@@ -53,6 +58,7 @@ export function writeUrlState(s: UiState): void {
   q.set("view", s.view);
   for (const [k, v] of Object.entries(s.filters)) if (v) q.set(k, v);
   if (s.view === "patients" && !s.hasTasks) q.set("has_tasks", "false");
+  if (s.pageSize !== DEFAULT_PAGE_SIZE) q.set("page_size", String(s.pageSize));
   if (s.offset) q.set("offset", String(s.offset));
   if (s.patient) q.set("patient", s.patient);
   window.history.replaceState(null, "", `?${q}`);

@@ -48,7 +48,9 @@ button.link { background: none; border: 0; padding: 0; color: var(--accent); tex
 button.link:hover { text-decoration: underline; }
 .filters button.link { padding-bottom: 8px; }
 
-.count { font-weight: 600; margin: 4px 0 8px; }
+.count { font-weight: 600; }
+.results-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin: 4px 0 8px; }
+.results-foot { margin-top: 12px; }
 .results.loading { opacity: 0.55; transition: opacity 0.15s; }
 
 table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--border); border-radius: 8px; }
@@ -74,7 +76,9 @@ table.compact th, table.compact td { padding: 5px 8px; }
 .chip-task-scheduling { border-color: #9fd3ad; color: #1e6b34; }
 .chip-task-referral { border-color: #f5c07a; color: #8a4b00; }
 
-.pager { display: flex; align-items: center; gap: 12px; justify-content: flex-end; margin-top: 12px; }
+.pager { display: flex; align-items: center; gap: 12px; justify-content: flex-end; font-size: 13px; }
+.pager label { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+.pager select { font: inherit; padding: 4px 6px; border: 1px solid var(--border); border-radius: 6px; background: #fff; }
 .pager button { padding: 5px 12px; border: 1px solid var(--border); background: #fff; border-radius: 6px; }
 .pager button:disabled { opacity: 0.4; cursor: default; }
 
