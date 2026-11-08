@@ -37,6 +37,7 @@ function Main({ meta }: { meta: Meta }) {
   const view: ViewProps = {
     role: ui.role,
     filters: { ...ui.filters, search },
+    asOf: meta.run.as_of,
     limit: ui.pageSize,
     offset: ui.offset,
     onOffset: (offset) => setUi((s) => ({ ...s, offset })),
@@ -51,13 +52,7 @@ function Main({ meta }: { meta: Meta }) {
   return (
     <div className="app">
       <header>
-        <div>
-          <div className="overline">Population health worklist</div>
-          <h1>Model of Care</h1>
-          <div className="meta mono" title={`Rules version ${meta.run.rules_version}`}>
-            as of {meta.run.as_of} · {meta.run.patients_evaluated} patients
-          </div>
-        </div>
+        <h1>Model of Care</h1>
         <div className="role">
           <span className="muted small">Viewing as</span>
           <div className="segmented" role="group" aria-label="Role">
@@ -106,6 +101,7 @@ function Main({ meta }: { meta: Meta }) {
 interface ViewProps {
   role: Role;
   filters: Filters;
+  asOf: string;
   limit: number;
   offset: number;
   onOffset: (offset: number) => void;
@@ -119,7 +115,7 @@ interface SortProps {
   onSort: (key: SortKey) => void;
 }
 
-function WorklistView({ role, filters, limit, offset, onOffset, onLimit, onOpenPatient, sort, order, onSort }: ViewProps & SortProps) {
+function WorklistView({ role, filters, asOf, limit, offset, onOffset, onLimit, onOpenPatient, sort, order, onSort }: ViewProps & SortProps) {
   const { data, error, loading } = useAsync(
     (signal) => api.tasks(role, filters, { sort, order, limit, offset }, signal),
     [role, JSON.stringify(filters), sort, order, limit, offset],
@@ -128,7 +124,7 @@ function WorklistView({ role, filters, limit, offset, onOffset, onLimit, onOpenP
     <div className={`results ${loading ? "loading" : ""}`}>
       {error && <p className="error">{error}</p>}
       {data && (
-        <Results total={data.total} limit={limit} noun="open task" pager={<Pager {...data} onOffset={onOffset} onLimit={onLimit} />}>
+        <Results total={data.total} limit={limit} asOf={asOf} noun="open task" pager={<Pager {...data} onOffset={onOffset} onLimit={onLimit} />}>
           <WorklistTable items={data.items} sort={sort} order={order} onSort={onSort} onOpenPatient={onOpenPatient} />
         </Results>
       )}
@@ -136,7 +132,7 @@ function WorklistView({ role, filters, limit, offset, onOffset, onLimit, onOpenP
   );
 }
 
-function PatientsView({ role, filters, limit, offset, onOffset, onLimit, onOpenPatient, hasTasks }: ViewProps & { hasTasks: boolean }) {
+function PatientsView({ role, filters, asOf, limit, offset, onOffset, onLimit, onOpenPatient, hasTasks }: ViewProps & { hasTasks: boolean }) {
   const { data, error, loading } = useAsync(
     (signal) => api.patients(role, filters, { hasTasks, limit, offset }, signal),
     [role, JSON.stringify(filters), limit, offset, hasTasks],
@@ -145,7 +141,7 @@ function PatientsView({ role, filters, limit, offset, onOffset, onLimit, onOpenP
     <div className={`results ${loading ? "loading" : ""}`}>
       {error && <p className="error">{error}</p>}
       {data && (
-        <Results total={data.total} limit={limit} noun="patient" pager={<Pager {...data} onOffset={onOffset} onLimit={onLimit} />}>
+        <Results total={data.total} limit={limit} asOf={asOf} noun="patient" pager={<Pager {...data} onOffset={onOffset} onLimit={onLimit} />}>
           <PatientsTable items={data.items} onOpenPatient={onOpenPatient} />
         </Results>
       )}
@@ -154,13 +150,19 @@ function PatientsView({ role, filters, limit, offset, onOffset, onLimit, onOpenP
 }
 
 /** Count and pager above the table; the pager repeats below it when there is more than one page. */
-function Results(props: { total: number; limit: number; noun: string; pager: ReactNode; children: ReactNode }) {
-  const { total, limit, noun, pager, children } = props;
+function Results(props: { total: number; limit: number; asOf: string; noun: string; pager: ReactNode; children: ReactNode }) {
+  const { total, limit, asOf, noun, pager, children } = props;
   if (total === 0) return <>{children}</>;
   return (
     <>
       <div className="results-head">
-        <div className="count">{`${total} ${noun}${total === 1 ? "" : "s"}`}</div>
+        <div className="count">
+          {`${total} ${noun}${total === 1 ? "" : "s"}`}
+          <span className="as-of">
+            {" "}
+            · as of <span className="mono">{asOf}</span>
+          </span>
+        </div>
         {pager}
       </div>
       {children}

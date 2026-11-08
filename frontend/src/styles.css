@@ -38,12 +38,10 @@ button { font: inherit; color: inherit; cursor: pointer; }
 /* Layout */
 .app { max-width: 1400px; margin: 0 auto; padding: 32px 32px 64px; }
 
-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; padding-bottom: 20px; border-bottom: 1px solid var(--ink); }
-.overline { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
-h1 { font-size: 34px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; margin: 4px 0 6px; }
+header { display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; padding-bottom: 16px; border-bottom: 1px solid var(--ink); }
+h1 { font-size: 26px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; margin: 0; }
 h2 { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 4px; }
 h3 { font-family: var(--mono); font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 24px 0 8px; }
-.meta { color: var(--ink-2); }
 
 .role { display: flex; align-items: center; gap: 10px; }
 .role > .small { font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px; }
@@ -81,6 +79,7 @@ button.link:hover { text-decoration-color: var(--ink); }
 .results.loading { opacity: 0.5; }
 .results-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
 .count { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+.count .as-of { font-size: 13px; font-weight: 400; letter-spacing: 0; color: var(--muted); }
 .results-foot { margin-top: 14px; }
 
 .pager { display: flex; align-items: center; gap: 12px; justify-content: flex-end; font-size: 13px; color: var(--ink-2); }
