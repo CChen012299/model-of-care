@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { api } from "./api/client";
-import type { Filters, Meta, Role, View } from "./api/types";
+import type { Filters, Meta, Role, SortKey, SortOrder, View } from "./api/types";
 import { FilterBar } from "./components/FilterBar";
 import { Pager } from "./components/Pager";
 import { PatientDrawer } from "./components/PatientDrawer";
 import { PatientsTable } from "./components/PatientsTable";
 import { WorklistTable } from "./components/WorklistTable";
-import { readUrlState, useAsync, useDebounced, writeUrlState, type UiState } from "./hooks";
+import { DEFAULT_ORDER, readUrlState, useAsync, useDebounced, writeUrlState, type UiState } from "./hooks";
 
 const ROLE_HELP: Record<Role, string> = {
   scheduler: "Scheduling tasks only: patients already seen by the specialty whose next visit is overdue. Book directly.",
@@ -43,6 +43,8 @@ function Main({ meta }: { meta: Meta }) {
     onLimit: (pageSize) => update({ pageSize }),
     onOpenPatient: (id) => setUi((s) => ({ ...s, patient: id })),
   };
+  const sortBy = (key: SortKey) =>
+    update(key === ui.sort ? { order: ui.order === "asc" ? "desc" : "asc" } : { sort: key, order: DEFAULT_ORDER[key] });
   const programNames = useMemo(() => Object.fromEntries(meta.programs.map((p) => [p.id, p.name])), [meta]);
   const closeDrawer = useCallback(() => setUi((s) => ({ ...s, patient: null })), []);
 
@@ -88,7 +90,11 @@ function Main({ meta }: { meta: Meta }) {
         onHasTasks={(hasTasks) => update({ hasTasks })}
       />
 
-      {ui.view === "worklist" ? <WorklistView {...view} /> : <PatientsView {...view} hasTasks={ui.hasTasks} />}
+      {ui.view === "worklist" ? (
+        <WorklistView {...view} sort={ui.sort} order={ui.order} onSort={sortBy} />
+      ) : (
+        <PatientsView {...view} hasTasks={ui.hasTasks} />
+      )}
 
       {ui.patient && (
         <PatientDrawer id={ui.patient} role={ui.role} programNames={programNames} onClose={closeDrawer} />
@@ -107,17 +113,23 @@ interface ViewProps {
   onOpenPatient: (id: string) => void;
 }
 
-function WorklistView({ role, filters, limit, offset, onOffset, onLimit, onOpenPatient }: ViewProps) {
+interface SortProps {
+  sort: SortKey;
+  order: SortOrder;
+  onSort: (key: SortKey) => void;
+}
+
+function WorklistView({ role, filters, limit, offset, onOffset, onLimit, onOpenPatient, sort, order, onSort }: ViewProps & SortProps) {
   const { data, error, loading } = useAsync(
-    (signal) => api.tasks(role, filters, { limit, offset }, signal),
-    [role, JSON.stringify(filters), limit, offset],
+    (signal) => api.tasks(role, filters, { sort, order, limit, offset }, signal),
+    [role, JSON.stringify(filters), sort, order, limit, offset],
   );
   return (
     <div className={`results ${loading ? "loading" : ""}`}>
       {error && <p className="error">{error}</p>}
       {data && (
         <Results total={data.total} limit={limit} noun="open task" pager={<Pager {...data} onOffset={onOffset} onLimit={onLimit} />}>
-          <WorklistTable items={data.items} onOpenPatient={onOpenPatient} />
+          <WorklistTable items={data.items} sort={sort} order={order} onSort={onSort} onOpenPatient={onOpenPatient} />
         </Results>
       )}
     </div>

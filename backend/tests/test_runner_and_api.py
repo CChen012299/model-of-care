@@ -139,6 +139,37 @@ def test_worklist_sorted_by_priority_then_overdue(client):
     assert keys == sorted(keys)
 
 
+@pytest.mark.parametrize("order", ["asc", "desc"])
+def test_worklist_sorts_by_patient_name(client, order):
+    items = all_tasks(client, role="clinical", sort="patient", order=order)
+    names = [(i["patient"]["last_name"].lower(), i["patient"]["first_name"].lower()) for i in items]
+    assert len(items) == 277
+    assert names == sorted(names, reverse=order == "desc")
+
+
+@pytest.mark.parametrize("order", ["asc", "desc"])
+def test_worklist_sorts_by_overdue_with_referrals_last(client, order):
+    days = [i["task"]["days_overdue"] for i in all_tasks(client, role="clinical", sort="overdue", order=order)]
+    counted = [d for d in days if d is not None]
+    assert counted == sorted(counted, reverse=order == "desc")
+    assert days[len(counted):] == [None] * (len(days) - len(counted))  # 119 referrals at the end
+
+
+def test_worklist_sorts_by_priority_ascending(client):
+    priorities = [i["task"]["priority"] for i in all_tasks(client, role="clinical", sort="priority", order="asc")]
+    assert priorities == sorted(priorities, key=lambda p: p == "high")
+
+
+def test_sort_does_not_change_role_scope(client):
+    items = all_tasks(client, role="scheduler", sort="patient")
+    assert len(items) == 158 and {i["task"]["task_type"] for i in items} == {"scheduling"}
+
+
+def test_unknown_sort_is_rejected(client):
+    assert client.get("/api/tasks", params={"role": "clinical", "sort": "age"}).status_code == 422
+    assert client.get("/api/tasks", params={"role": "clinical", "order": "sideways"}).status_code == 422
+
+
 def test_unknown_filters_are_rejected(client):
     assert client.get("/api/tasks", params={"role": "clinical", "specialty": "Dermatology"}).status_code == 400
     assert client.get("/api/tasks", params={"role": "clinical", "program": "nope"}).status_code == 400

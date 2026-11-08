@@ -94,6 +94,10 @@ button.link:hover { text-decoration-color: var(--ink); }
 table { width: 100%; border-collapse: collapse; background: var(--surface); border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); }
 th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
 th { font-family: var(--mono); font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); background: var(--paper); border-bottom: 1px solid var(--ink); position: sticky; top: 0; }
+th button.sort { border: 0; background: none; padding: 0; font: inherit; color: inherit; text-transform: inherit; letter-spacing: inherit; display: inline-flex; gap: 5px; align-items: baseline; }
+th button.sort span { color: var(--line); }
+th button.sort:hover, th button.sort.active { color: var(--ink); }
+th button.sort:hover span, th button.sort.active span { color: var(--ink); }
 tbody tr:hover td { background: var(--hover); }
 tr:last-child td { border-bottom: 0; }
 td.reason { max-width: 320px; color: var(--ink-2); }

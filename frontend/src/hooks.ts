@@ -1,5 +1,5 @@
 import { useEffect, useState, type DependencyList } from "react";
-import { EMPTY_FILTERS, type Filters, type Role, type View } from "./api/types";
+import { EMPTY_FILTERS, type Filters, type Role, type SortKey, type SortOrder, type View } from "./api/types";
 
 interface AsyncState<T> {
   data?: T;
@@ -26,11 +26,17 @@ export function useAsync<T>(load: (signal: AbortSignal) => Promise<T>, deps: Dep
 export const PAGE_SIZES = [20, 50, 100] as const;
 export const DEFAULT_PAGE_SIZE = 50;
 
+/** First click on a column sorts in its most useful direction; the next click reverses it. */
+export const DEFAULT_ORDER: Record<SortKey, SortOrder> = { priority: "desc", patient: "asc", overdue: "desc" };
+const SORT_KEYS = Object.keys(DEFAULT_ORDER) as SortKey[];
+
 export interface UiState {
   role: Role;
   view: View;
   filters: Filters;
   hasTasks: boolean;
+  sort: SortKey;
+  order: SortOrder;
   pageSize: number;
   offset: number;
   patient: string | null;
@@ -41,11 +47,14 @@ export function readUrlState(): UiState {
   const q = new URLSearchParams(window.location.search);
   const filters = { ...EMPTY_FILTERS };
   for (const key of Object.keys(filters) as (keyof Filters)[]) filters[key] = q.get(key) ?? "";
+  const sort = SORT_KEYS.find((k) => k === q.get("sort")) ?? "priority";
   return {
     role: q.get("role") === "scheduler" ? "scheduler" : "clinical",
     view: q.get("view") === "patients" ? "patients" : "worklist",
     filters,
     hasTasks: q.get("has_tasks") !== "false",
+    sort,
+    order: q.get("order") === "asc" || q.get("order") === "desc" ? (q.get("order") as SortOrder) : DEFAULT_ORDER[sort],
     pageSize: PAGE_SIZES.find((n) => n === Number(q.get("page_size"))) ?? DEFAULT_PAGE_SIZE,
     offset: Number(q.get("offset") ?? 0) || 0,
     patient: q.get("patient"),
@@ -58,6 +67,10 @@ export function writeUrlState(s: UiState): void {
   q.set("view", s.view);
   for (const [k, v] of Object.entries(s.filters)) if (v) q.set(k, v);
   if (s.view === "patients" && !s.hasTasks) q.set("has_tasks", "false");
+  if (s.sort !== "priority" || s.order !== DEFAULT_ORDER.priority) {
+    q.set("sort", s.sort);
+    q.set("order", s.order);
+  }
   if (s.pageSize !== DEFAULT_PAGE_SIZE) q.set("page_size", String(s.pageSize));
   if (s.offset) q.set("offset", String(s.offset));
   if (s.patient) q.set("patient", s.patient);

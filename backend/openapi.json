@@ -313,7 +313,7 @@
     "/api/tasks": {
       "get": {
         "summary": "List Tasks",
-        "description": "The worklist: one row per open task, sorted by priority then most overdue.",
+        "description": "The worklist: one row per open task. Default order: priority, then most overdue.",
         "operationId": "list_tasks_api_tasks_get",
         "parameters": [
           {
@@ -399,6 +399,45 @@
               "title": "Search"
             },
             "description": "Patient name or ID contains"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "priority",
+                "patient",
+                "overdue"
+              ],
+              "type": "string",
+              "description": "priority, patient (last, first name) or overdue (days)",
+              "default": "priority",
+              "title": "Sort"
+            },
+            "description": "priority, patient (last, first name) or overdue (days)"
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "asc",
+                    "desc"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "asc or desc; defaults: priority desc, patient asc, overdue desc",
+              "title": "Order"
+            },
+            "description": "asc or desc; defaults: priority desc, patient asc, overdue desc"
           },
           {
             "name": "limit",

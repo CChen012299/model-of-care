@@ -1,4 +1,4 @@
-import type { Filters, Meta, PatientDetail, PatientList, Role, TaskList } from "./types";
+import type { Filters, Meta, PatientDetail, PatientList, Role, SortKey, SortOrder, TaskList } from "./types";
 
 type Params = Record<string, string | number | boolean | undefined>;
 
@@ -20,8 +20,12 @@ async function get<T>(path: string, role: Role | null, params: Params = {}, sign
 export const api = {
   meta: (signal?: AbortSignal) => get<Meta>("/meta", null, {}, signal),
 
-  tasks: (role: Role, f: Filters, page: { limit: number; offset: number }, signal?: AbortSignal) =>
-    get<TaskList>("/tasks", role, { ...f, ...page }, signal),
+  tasks: (
+    role: Role,
+    f: Filters,
+    opts: { sort: SortKey; order: SortOrder; limit: number; offset: number },
+    signal?: AbortSignal,
+  ) => get<TaskList>("/tasks", role, { ...f, ...opts }, signal),
 
   patients: (
     role: Role,

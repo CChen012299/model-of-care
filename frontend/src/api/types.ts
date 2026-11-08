@@ -15,6 +15,8 @@ export type WorklistItem = S["WorklistItem"];
 export type TaskList = S["TaskList"];
 
 export type Role = "scheduler" | "clinical";
+export type SortKey = "priority" | "patient" | "overdue";
+export type SortOrder = "asc" | "desc";
 export type View = "worklist" | "patients";
 
 export interface Filters {

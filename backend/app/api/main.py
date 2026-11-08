@@ -148,11 +148,13 @@ def list_tasks(
     program: str | None = Query(None, description="Tasks whose need was requested by this program"),
     tier: str | None = Query(None),
     search: str | None = Query(None, description="Patient name or ID contains"),
+    sort: queries.SortKey = Query("priority", description="priority, patient (last, first name) or overdue (days)"),
+    order: queries.SortOrder | None = Query(None, description="asc or desc; defaults: priority desc, patient asc, overdue desc"),
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
     ctx: RequestContext = Depends(get_ctx),
 ) -> schemas.TaskList:
-    """The worklist: one row per open task, sorted by priority then most overdue."""
+    """The worklist: one row per open task. Default order: priority, then most overdue."""
     spec = _specialty(ctx.catalog, specialty)
     program, tier = _program_tier(ctx.catalog, program, tier)
     return queries.list_tasks(
@@ -164,6 +166,8 @@ def list_tasks(
         program=program,
         tier=tier,
         search=search,
+        sort=sort,
+        order=order or queries.DEFAULT_ORDER[sort],
         limit=limit,
         offset=offset,
     )

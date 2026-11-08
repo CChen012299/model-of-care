@@ -93,7 +93,7 @@ export interface paths {
         };
         /**
          * List Tasks
-         * @description The worklist: one row per open task, sorted by priority then most overdue.
+         * @description The worklist: one row per open task. Default order: priority, then most overdue.
          */
         get: operations["list_tasks_api_tasks_get"];
         put?: never;
@@ -553,6 +553,10 @@ export interface operations {
                 tier?: string | null;
                 /** @description Patient name or ID contains */
                 search?: string | null;
+                /** @description priority, patient (last, first name) or overdue (days) */
+                sort?: "priority" | "patient" | "overdue";
+                /** @description asc or desc; defaults: priority desc, patient asc, overdue desc */
+                order?: ("asc" | "desc") | null;
                 limit?: number;
                 offset?: number;
                 /** @description Caller role (alternative to the X-Role header) */

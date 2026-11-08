@@ -1,26 +1,40 @@
-import type { WorklistItem } from "../api/types";
+import type { SortKey, SortOrder, WorklistItem } from "../api/types";
 import { DueCell, PriorityBadge, TaskTypeBadge } from "./badges";
 
 interface Props {
   items: WorklistItem[];
+  sort: SortKey;
+  order: SortOrder;
+  onSort: (key: SortKey) => void;
   onOpenPatient: (id: string) => void;
 }
 
-export function WorklistTable({ items, onOpenPatient }: Props) {
+export function WorklistTable({ items, sort, order, onSort, onOpenPatient }: Props) {
+  const header = (key: SortKey, label: string) => {
+    const active = sort === key;
+    return (
+      <th aria-sort={active ? (order === "asc" ? "ascending" : "descending") : "none"}>
+        <button className={`sort${active ? " active" : ""}`} onClick={() => onSort(key)}>
+          {label}
+          <span aria-hidden="true">{active ? (order === "asc" ? "↑" : "↓") : "↕"}</span>
+        </button>
+      </th>
+    );
+  };
   if (!items.length) return <p className="empty">No open tasks match these filters.</p>;
   return (
     <table>
       <thead>
         <tr>
-          <th>Priority</th>
-          <th>Patient</th>
+          {header("priority", "Priority")}
+          {header("patient", "Patient")}
           <th>Age</th>
           <th>Language</th>
           <th>Phone</th>
           <th>Specialty</th>
           <th>Task</th>
           <th>Program / tier</th>
-          <th>Overdue</th>
+          {header("overdue", "Overdue")}
           <th>Why</th>
         </tr>
       </thead>

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from collections.abc import Sequence
+from typing import Literal
 
 from sqlalchemy import Select, case, func, or_, select
 from sqlalchemy.orm import Session, selectinload
@@ -159,6 +160,29 @@ def get_patient(session: Session, run: EngineRun, patient_id: str, types: frozen
 
 # Worklist (tasks)
 
+SortKey = Literal["priority", "patient", "overdue"]
+SortOrder = Literal["asc", "desc"]
+DEFAULT_ORDER: dict[str, SortOrder] = {"priority": "desc", "patient": "asc", "overdue": "desc"}
+
+
+def _worklist_order(sort: SortKey, order: SortOrder) -> list:
+    """ORDER BY for the worklist.
+
+    Ties fall back to the triage order (priority, then most overdue). Tasks
+    with no overdue count (referrals) sort after counted ones in both
+    directions, since "first visit" is not a number of days.
+    """
+    desc = order == "desc"
+    no_count_last = case((Task.days_overdue.is_(None), 1), else_=0)  # portable "NULLS LAST"
+    if sort == "patient":
+        names = [func.lower(Patient.last_name), func.lower(Patient.first_name), Task.patient_id]
+        return [n.desc() if desc else n.asc() for n in names] + [_PRIORITY_ORDER.desc(), Task.target]
+    if sort == "overdue":
+        overdue = Task.days_overdue.desc() if desc else Task.days_overdue.asc()
+        return [no_count_last, overdue, _PRIORITY_ORDER.desc(), Task.patient_id, Task.target]
+    priority = _PRIORITY_ORDER.desc() if desc else _PRIORITY_ORDER.asc()
+    return [priority, no_count_last, Task.days_overdue.desc(), Task.patient_id, Task.target]
+
 
 def list_tasks(
     session: Session,
@@ -170,6 +194,8 @@ def list_tasks(
     program: str | None,
     tier: str | None,
     search: str | None,
+    sort: SortKey,
+    order: SortOrder,
     limit: int,
     offset: int,
 ) -> schemas.TaskList:
@@ -193,19 +219,9 @@ def list_tasks(
         q = q.join(Patient, Patient.patient_id == Task.patient_id).where(_search_filter(search))
 
     total = session.scalar(select(func.count()).select_from(q.subquery())) or 0
-    page = list(
-        session.scalars(
-            q.order_by(
-                _PRIORITY_ORDER.desc(),
-                case((Task.days_overdue.is_(None), 1), else_=0),  # portable "NULLS LAST"
-                Task.days_overdue.desc(),
-                Task.patient_id,
-                Task.target,
-            )
-            .limit(limit)
-            .offset(offset)
-        )
-    )
+    if sort == "patient" and not search:
+        q = q.join(Patient, Patient.patient_id == Task.patient_id)
+    page = list(session.scalars(q.order_by(*_worklist_order(sort, order)).limit(limit).offset(offset)))
 
     pids = sorted({t.patient_id for t in page})
     patients = {p.patient_id: p for p in session.scalars(select(Patient).where(Patient.patient_id.in_(pids)))} if pids else {}

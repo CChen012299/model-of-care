@@ -55,10 +55,10 @@ cd backend
 pytest
 ```
 
-65 tests: rule boundaries (age 18/65, A1C 7.0/9.0, the 6-month window, cadence
+72 tests: rule boundaries (age 18/65, A1C 7.0/9.0, the 6-month window, cadence
 edges), every chronic ICD family, upcoming visits, never-seen PCP vs specialist,
 cross-program need merging, rules config validation, idempotent re-runs and
-re-seeding, and API role scoping on the provided data.
+re-seeding, worklist sorting, and API role scoping on the provided data.
 
 ---
 
@@ -106,7 +106,9 @@ whatever filters they send.
 
 Filters on `/api/tasks` and `/api/patients`: `specialty`, `task_type`
 (`scheduling` / `referral`), `program`, `tier`, `search`, `limit`, `offset`.
-`/api/patients` also takes `has_tasks=true`. Unknown filter values return 400
+`/api/patients` also takes `has_tasks=true`. `/api/tasks` also takes
+`sort` (`priority`, `patient` or `overdue`) and `order` (`asc` or `desc`); the
+default is priority, then most overdue. Unknown filter values return 400
 rather than an empty list.
 
 ```bash
@@ -127,6 +129,8 @@ curl "localhost:8000/api/tasks?role=clinical&task_type=referral"
 * **Worklist** tab: one row per task with priority, patient contact details,
   specialty, task type, the program and tier that created it, days overdue and the
   reason.
+* **Sorting:** click Priority, Patient or Overdue in the worklist header; click again to
+  reverse. Sorting happens on the server, so it holds across pages.
 * **Patients** tab: one row per patient with programs and tiers, every need and its
   status, and open tasks.
 * **Filters:** specialty, task type (only the types the role can see), program, tier,
