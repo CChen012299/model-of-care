@@ -22,7 +22,7 @@ export function Pager({ total, limit, offset, onOffset, onLimit }: Props) {
           ))}
         </select>
       </label>
-      <span>
+      <span className="mono">
         {offset + 1} to {end} of {total}
       </span>
       <button disabled={offset === 0} onClick={() => onOffset(Math.max(0, offset - limit))}>

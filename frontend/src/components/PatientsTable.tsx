@@ -27,9 +27,9 @@ export function PatientsTable({ items, onOpenPatient }: Props) {
               <button className="link nowrap" onClick={() => onOpenPatient(p.patient_id)}>
                 {p.last_name}, {p.first_name}
               </button>
-              <div className="muted small">{p.patient_id}</div>
+              <div className="muted small mono">{p.patient_id}</div>
             </td>
-            <td>{p.age}</td>
+            <td className="mono">{p.age}</td>
             <td className="small">{p.pcp_provider_name ?? <span className="muted">none assigned</span>}</td>
             <td>
               {p.enrollments.length ? (

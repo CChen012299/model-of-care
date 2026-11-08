@@ -34,11 +34,11 @@ export function WorklistTable({ items, onOpenPatient }: Props) {
               <button className="link nowrap" onClick={() => onOpenPatient(patient.patient_id)}>
                 {patient.last_name}, {patient.first_name}
               </button>
-              <div className="muted small">{patient.patient_id}</div>
+              <div className="muted small mono">{patient.patient_id}</div>
             </td>
-            <td>{patient.age}</td>
+            <td className="mono">{patient.age}</td>
             <td>{patient.language}</td>
-            <td className="nowrap">{patient.phone}</td>
+            <td className="nowrap mono">{patient.phone}</td>
             <td>{task.target}</td>
             <td>
               <TaskTypeBadge type={task.task_type} />

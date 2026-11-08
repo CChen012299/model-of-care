@@ -50,9 +50,10 @@ function Main({ meta }: { meta: Meta }) {
     <div className="app">
       <header>
         <div>
-          <h1>Model of Care Worklist</h1>
-          <div className="muted small" title={`Rules version ${meta.run.rules_version}`}>
-            Evaluated as of <strong>{meta.run.as_of}</strong> · {meta.run.patients_evaluated} patients
+          <div className="overline">Population health worklist</div>
+          <h1>Model of Care</h1>
+          <div className="meta mono" title={`Rules version ${meta.run.rules_version}`}>
+            as of {meta.run.as_of} · {meta.run.patients_evaluated} patients
           </div>
         </div>
         <div className="role">

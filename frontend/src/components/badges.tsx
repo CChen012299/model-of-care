@@ -55,8 +55,8 @@ export function DueCell({ task }: { task: Task }) {
   if (task.task_type === "referral") return <span className="muted">first visit</span>;
   return (
     <span>
-      <strong>{task.days_overdue} days</strong>
-      <div className="muted small">due {task.due_date}</div>
+      <strong className="mono">{task.days_overdue} days</strong>
+      <div className="muted small mono">due {task.due_date}</div>
     </span>
   );
 }

@@ -31,7 +31,7 @@ export function PatientDrawer({ id, role, programNames, onClose }: Props) {
         {p && (
           <>
             <h2>
-              {p.first_name} {p.last_name} <span className="muted">{p.patient_id}</span>
+              {p.first_name} {p.last_name} <span className="muted mono">{p.patient_id}</span>
             </h2>
             <p className="muted">
               {p.age} y · {p.gender} · {p.language} · {p.phone} · PCP: {p.pcp_provider_name ?? "none assigned"}
@@ -78,9 +78,9 @@ export function PatientDrawer({ id, role, programNames, onClose }: Props) {
                     <td>
                       <NeedChip need={n} />
                     </td>
-                    <td className="nowrap">{n.cadence_days} d</td>
-                    <td className="nowrap">{n.last_date ?? "never"}</td>
-                    <td className="nowrap">{n.next_scheduled_date ?? "none"}</td>
+                    <td className="nowrap mono">{n.cadence_days} d</td>
+                    <td className="nowrap mono">{n.last_date ?? "never"}</td>
+                    <td className="nowrap mono">{n.next_scheduled_date ?? "none"}</td>
                     <td className="small">
                       {n.sources.map((s) => `${programNames[s.program_id] ?? s.program_id} (${s.tier})`).join(", ")}
                     </td>
@@ -93,7 +93,7 @@ export function PatientDrawer({ id, role, programNames, onClose }: Props) {
             <ul className="small">
               {p.diagnoses.map((d) => (
                 <li key={`${d.icd_code}${d.diagnosed_date}`}>
-                  {d.icd_code} {d.description} <span className="muted">({d.diagnosed_date})</span>
+                  {d.icd_code} {d.description} <span className="muted mono">({d.diagnosed_date})</span>
                 </li>
               ))}
               {p.diagnoses.length === 0 && <li className="muted">None on record</li>}
@@ -103,7 +103,7 @@ export function PatientDrawer({ id, role, programNames, onClose }: Props) {
             <ul className="small">
               {p.labs.map((l) => (
                 <li key={`${l.test_name}${l.result_date}`}>
-                  {l.test_name}: {l.result_value} <span className="muted">({l.result_date})</span>
+                  {l.test_name}: {l.result_value} <span className="muted mono">({l.result_date})</span>
                 </li>
               ))}
               {p.labs.length === 0 && <li className="muted">None on record</li>}
@@ -113,7 +113,7 @@ export function PatientDrawer({ id, role, programNames, onClose }: Props) {
             <ul className="small">
               {p.encounters.map((e, i) => (
                 <li key={i}>
-                  {e.upcoming && <span className="badge badge-scheduled">upcoming</span>} {e.encounter_date} · {e.specialty} ·{" "}
+                  {e.upcoming && <span className="badge badge-scheduled">upcoming</span>} <span className="mono">{e.encounter_date}</span> · {e.specialty} ·{" "}
                   {e.provider_name}
                 </li>
               ))}
